@@ -44,4 +44,6 @@ from ml_data_fitting import plot_eval_results
 plot_eval_results(results)
 ```
 
-Example plotting figures are shown as follows :![Max_Mises_Mpa_validation](img\Max_Mises_Mpa_validation.png)
+Example plotting figures are shown as follows :
+
+<img src="img/Max_Mises_Mpa_validation.png" alt="Max_Mises_Mpa_validation" style="zoom:80%;" />
