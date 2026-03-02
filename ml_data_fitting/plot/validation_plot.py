@@ -6,6 +6,8 @@ import numpy as np
 import os
 from typing import Optional, Dict
 
+from numba.cuda import target
+
 """
 plot_model_validations
 ------------------------
@@ -436,21 +438,34 @@ def plot_model_validations(
 
     return summary
 
+def compute_target_cvs_dict(
+    y: np.ndarray,
+    targets: list,
+) -> Dict[str, float]:
+    """
+    Compute CV values (Coefficient of Variation) for each target based on the provided data.
+    """
+    CV = np.std(y, axis=0) / (np.mean(y, axis=0) + 1e-9)  # Add small epsilon to avoid division by zero
+    return {target: cv for target, cv in zip(targets, CV)}
 
 def plot_eval_results(
-        all_results: Dict[str, Dict[str, Dict[str, float]]],
-        output_dir: str = "./validation_plots",
-        **kwargs
+    all_results: Dict[str, Dict[str, Dict[str, float]]],
+    target_cvs: Optional[Dict[str, float]] = None,
+    output_dir: str = "./validation_plots",
+    **kwargs
 ):
     """
-    Plot all eval results
+    Plot all eval results (Transfer CVS to check if some parameter should use Person R plot)
+
     :param all_results: dict[target][model] = metrics
+    :param target_cvs: dict[target][cv] = metrics
     :return:
     """
     for tar, result in all_results.items():
         plot_model_validations(
             {tar: result},  # Pass single target dict
             output_dir=os.path.join(output_dir, tar.replace('/', '_')),
+            target_cvs=target_cvs,
             **kwargs
         )
     print("save validation plots to:", output_dir)

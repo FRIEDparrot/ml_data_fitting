@@ -7,26 +7,30 @@ from scipy.interpolate import make_interp_spline
 Plot function for accuracy testing and comparing
 """
 
-def plot_tolerance_accuracy(y_true,
-                            y_pred,
-                            threshold_range: tuple = (0.01, 0.5),
-                            threshold_steps: int = 50,
-                            columns: Optional[List[str]] = None,
-                            title: Optional[str] = None,
-                            save_path: Optional[str] = None,
-                            colors: Optional[List[str]] = None,
-                            markers: Optional[List[str]] = None,
-                            line_styles: Optional[List[str]] = None,
-                            figsize: tuple = (10, 6),
-                            dpi: int = 300) -> Dict[str, np.ndarray]:
+def plot_tolerance_accuracy(
+        y_true,
+        y_pred,
+        threshold_range: tuple = (0.01, 0.5),
+        threshold_steps: int = 50,
+        column_names: Optional[List[str]] = None,
+        title: Optional[str] = None,
+        save_path: Optional[str] = None,
+        colors: Optional[List[str]] = None,
+        markers: Optional[List[str]] = None,
+        line_styles: Optional[List[str]] = None,
+        figsize: tuple = (10, 6),
+        dpi: int = 300,
+        k = 3,
+) -> Dict[str, np.ndarray]:
     """
     Plot accuracy prediction curve showing the relationship between error threshold and prediction accuracy
+    Just a simple function,
 
     :param y_true: True values (n_samples, n_features) or (n_samples,)
     :param y_pred: Predicted values (n_samples, n_methods) for multiple methods or (n_samples,) for single method
     :param threshold_range: Range of error thresholds to evaluate (min, max)
     :param threshold_steps: Number of threshold points to evaluate
-    :param columns: Names of prediction methods
+    :param column_names: Names of prediction methods
     :param title: Plot title (optional)
     :param save_path: Path to save the figure (optional)
     :param colors: List of colors for each method (optional)
@@ -34,6 +38,7 @@ def plot_tolerance_accuracy(y_true,
     :param line_styles: List of line styles for each method (optional)
     :param figsize: Figure size (width, height)
     :param dpi: DPI for saved figure
+    :param k:
     :return: Dictionary containing threshold arrays and accuracy arrays for each method
     """
     # Handle input dimensions
@@ -48,10 +53,10 @@ def plot_tolerance_accuracy(y_true,
     m = y_pred.shape[1]  # Number of prediction methods
 
     # Set default method names
-    if columns is None:
-        columns = [f'Method {i+1}' for i in range(m)]
+    if column_names is None:
+        column_names = [f'Method {i + 1}' for i in range(m)]
     else:
-        assert m == len(columns), "Length of columns must match number of prediction methods"
+        assert m == len(column_names), "Length of columns must match number of prediction methods"
 
     # Set default colors, markers, and line styles
     if colors is None:
@@ -74,7 +79,7 @@ def plot_tolerance_accuracy(y_true,
     plt.rcParams['font.size'] = 11
     plt.rcParams['axes.linewidth'] = 1.2
 
-    for i, method in enumerate(columns):
+    for i, method in enumerate(column_names):
         accuracy_list = []
 
         for threshold in thresholds:
@@ -97,7 +102,7 @@ def plot_tolerance_accuracy(y_true,
         # Interpolate for smooth curve
         if threshold_steps >= 10:
             # Create smooth spline interpolation
-            spl = make_interp_spline(thresholds, accuracy_array, k=3)
+            spl = make_interp_spline(thresholds, accuracy_array, k=k)
             thresholds_smooth = np.linspace(threshold_range[0], threshold_range[1], 300)
             accuracy_smooth = spl(thresholds_smooth)
 
@@ -147,7 +152,7 @@ def plot_tolerance_accuracy(y_true,
 
     # Return results
     results = {'thresholds': thresholds}
-    for method in columns:
+    for method in column_names:
         results[method] = accuracies[method]
 
     return results
@@ -176,7 +181,7 @@ def main():
         y_pred=y_pred,
         threshold_range=(0.01, 0.30),
         threshold_steps=40,
-        columns=['Neural Network', 'Random Forest', 'Gradient Boosting', 'Linear Regression'],
+        column_names=['Neural Network', 'Random Forest', 'Gradient Boosting', 'Linear Regression'],
         title='Comparison of ML Model Prediction Accuracy',
         save_path='../utils/accuracy_comparison.png',
         colors=['#2E86AB', '#A23B72', '#F18F01', '#C73E1D'],
